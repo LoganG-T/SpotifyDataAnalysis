@@ -15,9 +15,10 @@ CLIENT_SECRET = ''
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET))
 
 
+
 #Users spotify userID and the ID of the users playlist (Only public playlists available)
 username = ''
-playerlist = 'spotify:playlist:560Qtov5uz9TSBSYj8hRPa'
+playerlist = ''
 
 def Top_Artists():
     results = sp.user_playlist_tracks(username, playerlist)
@@ -194,13 +195,62 @@ def Explicit_Percent():
     print(str(total_count) + ' ' + str(explicit_count))
 
 #https://developer.spotify.com/documentation/web-api/reference/personalization/get-users-top-artists-and-tracks/
-def User_Favourites():
-    print('x')
+def User_Favourite_Tracks(given_user):
+    token = util.prompt_for_user_token(given_user, 'user-top-read', CLIENT_ID, CLIENT_SECRET,
+                                       'http://localhost:8080')
+    sp_a = spotipy.Spotify(auth=token)
+    track_results = sp_a.current_user_top_tracks()
+    for t in track_results['items']:
+        track_name = t['name']
+        track_artist = t['artists'][0]['name']
+        print(track_name + ' ' + track_artist)
+
+def User_Favourite_Artists(given_user):
+    #limit-50, offset-50, time_range-(long_term, medium_term,short_term)
+    token = util.prompt_for_user_token(given_user, 'user-top-read', CLIENT_ID, CLIENT_SECRET,
+                                       'http://localhost:8080')
+    sp_a = spotipy.Spotify(auth=token)
+    artist_results = sp_a.current_user_top_artists(limit=10)
+    print(artist_results)
+    for t in artist_results['items']:
+        print(t)
+        follower_count = t['followers']['total']
+        genres = t['genres']
+        artist_name = t['name']
+        artist_popularity = t['popularity']
+        print(str(follower_count) + ' ' + str(genres) + ' ' + str(artist_name) + ' ' + str(artist_popularity))
 
 
 #Explicit_Percent()
 #Top_Artists()
-
 #Group_Year()
+#User_Favourite_Tracks(username)
+#User_Favourite_Artists(username)
+
+CLIENT_ID = input('Please enter the Spotify developer Client ID')
+CLIENT_SECRET = input('Please enter the Spotify developer Client Secrect ID')
+
+username = input('Please enter your Spotify username')
+playerlist = input('Please enter the Spotify playlist to analyse. This must be a public playlist.')
+
+user_input = ''
+
+while user_input is not 'q' and user_input is not 'quit':
+    user_input = input('Enter one of the following commands or type q to quit.\n \'top\', \'year\',\'explicit\',\'personal\'\n')
+    if user_input == 'top':
+        Top_Artists()
+    elif user_input == 'year':
+        Group_Year()
+    elif user_input == 'explicit':
+        Explicit_Percent()
+    elif user_input == 'personal':
+        print('You will need to sign into your Spotify account to allow access to this app.\n To quit enter q to go back enter b.\n')
+        second_input = input('Enter a command.\n\'track\',\'artist\'\n')
+        if second_input == 'track':
+            User_Favourite_Tracks(username)
+        elif second_input == 'artist':
+            User_Favourite_Artists(username)
+
+
 
 
